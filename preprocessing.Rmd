@@ -1,0 +1,132 @@
+---
+title: "Racing"
+author: "Kali Olmsted"
+date: "2025-03-02"
+output: pdf_document
+---
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(lubridate)
+
+```
+
+
+```{r}
+
+race1_21 <- read.csv("2021 Race 1 Pirelli.csv")
+race1_21
+
+```
+
+```{r}
+weather1_21 <- read.csv("2021 Race 1 Weather Report.csv")
+weather1_21
+
+```
+
+```{r}
+
+avg_track_temp1_21 <- weather1_21 %>% 
+  summarise(AVG_TRACK_TEMP = mean(TRACK_TEMP)) %>% 
+  pull(AVG_TRACK_TEMP)
+
+race1_21 <- race1_21 %>%
+  mutate(AVG_TRACK_TEMP = avg_track_temp1_21, 
+         YEAR = 2021)
+
+```
+
+
+```{r}
+
+race2_21 <- read.csv("2021 Race 2 Pirelli.csv")
+weather2_21 <- read.csv("2021 Race 2 Weather Report.csv")
+
+```
+
+```{r}
+
+avg_track_temp2_21 <- weather2_21 %>% 
+  summarise(AVG_TRACK_TEMP = mean(TRACK_TEMP)) %>% 
+  pull(AVG_TRACK_TEMP)
+
+race2_21 <- race2_21 %>%
+  mutate(AVG_TRACK_TEMP = avg_track_temp2_21,
+         YEAR = 2021)
+
+
+```
+
+
+```{r}
+
+race1_22 <- read.csv("2022 Race 1 Pirelli.csv")
+weather1_22 <- read.csv("2022 Race 1 Weather Report.csv")
+
+```
+
+```{r}
+
+avg_track_temp1_22 <- weather1_22 %>% 
+  summarise(AVG_TRACK_TEMP = mean(TRACK_TEMP)) %>% 
+  pull(AVG_TRACK_TEMP)
+
+race1_22 <- race1_22 %>%
+  mutate(AVG_TRACK_TEMP = avg_track_temp1_22,
+         YEAR = 2022)
+
+```
+
+```{r}
+
+race2_22 <- read.csv("2022 Race 2 Pirelli.csv")
+weather2_22 <- read.csv("2022 Race 2 Weather Report.csv")
+
+```
+
+
+```{r}
+
+avg_track_temp2_22 <- weather2_22 %>% 
+  summarise(AVG_TRACK_TEMP = mean(TRACK_TEMP)) %>% 
+  pull(AVG_TRACK_TEMP)
+
+race2_22 <- race2_22 %>%
+  mutate(AVG_TRACK_TEMP = avg_track_temp2_22,
+         YEAR = 2022)
+
+```
+
+```{r}
+
+pirelli_df <- rbind(race1_21, race2_21, race1_22, race2_22)
+pirelli_df <- pirelli_df %>% 
+  select(NUMBER,	DRIVER_NUMBER,	LAP_NUMBER,	LAP_TIME,	S1,	S2,	S3	,KPH,	ELAPSED,	CLASS,	TEAM	,AVG_TRACK_TEMP,	YEAR) %>% 
+  filter(CLASS == "Pro") %>% 
+  mutate(LAP_TIME = period_to_seconds(ms(LAP_TIME)),
+         ELAPSED = period_to_seconds(ms(ELAPSED)),
+         S1 = case_when(grepl(":", S1) ~ period_to_seconds(ms(S1)),  
+          TRUE ~ as.numeric(S1)), 
+         S2 = case_when(grepl(":", S2) ~ period_to_seconds(ms(S2)),  
+          TRUE ~ as.numeric(S2)), 
+         S3 = case_when(grepl(":", S3) ~ period_to_seconds(ms(S3)),  
+          TRUE ~ as.numeric(S3)), 
+         AVG_TRACK_TEMP = round(AVG_TRACK_TEMP,2), 
+         TIRE_TYPE = "Pirelli")
+
+pirelli_df
+  
+```
+
+```{r}
+
+#write.csv(pirelli_df, "pirelli_df.csv", row.names = FALSE)
+
+
+```
+
+
+

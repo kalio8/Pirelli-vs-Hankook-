@@ -1,0 +1,155 @@
+---
+title: "racing_code"
+author: "Kali Olmsted"
+date: "2025-03-03"
+output: pdf_document
+---
+
+```{r}
+
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+
+```
+
+
+```{r}
+
+hankook <- read.csv("Hankook_df.csv")
+head(hankook)
+
+
+```
+
+```{r}
+
+pirelli <- read.csv("pirelli_df.csv")
+head(pirelli)
+
+```
+
+
+```{r}
+
+
+all_tires <- rbind(pirelli, hankook)
+all_tires
+
+```
+
+
+```{r}
+
+#write.csv(all_tires, "alltires.csv", row.names = FALSE)
+
+```
+
+
+```{r}
+
+all_tires$TIRE_TYPE <- factor(all_tires$TIRE_TYPE)
+contrasts(all_tires$TIRE_TYPE)
+
+
+```
+
+
+```{r}
+
+model1 <- lm(LAP_TIME ~ TIRE_TYPE, data = all_tires)
+print(model1)
+summary(model1)
+
+```
+
+Since Hankook Tires represent 0, the equation would be y =  105.693, and for Pirelli tires it would be y = 105.693 - 9.912 = 95.781. With this we see that Pirelli tires are having faster lap times. 
+
+
+```{r}
+
+ggplot(data, aes(x = factor(Tire_Lap), y = Lap_Time, fill = Tire_Type)) +
+  geom_boxplot() +
+  labs(x = "Tire Lap", y = "Lap Time", title = "Lap Time vs. Tire Lap by Tire Type") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Soft" = "red", "Hard" = "blue"))  # Custom colors
+
+```
+
+
+
+```{r}
+
+
+model2 <- lm(LAP_TIME ~ TIRE_TYPE +AVG_TRACK_TEMP+LAP_NUMBER , data = all_tires)
+print(model2)
+summary(model2)
+
+```
+
+```{r}
+
+
+ggplot(pirelli, aes(x = factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot() +
+  labs(x = "Tire Lap", y = "Lap Time", title = "Lap Time vs. Tire Lap") +
+  theme_minimal()
+
+```
+
+
+```{r}
+
+ggplot(hankook, aes(x = factor(LAP_NUMBER), y = LAP_TIME)) +
+  geom_boxplot() +
+  labs(x = "Tire Lap", y = "Lap Time", title = "Lap Time vs. Tire Lap") +
+  theme_minimal()
+
+
+```
+
+```{r}
+
+df_long <- hankook %>%
+  filter(LAP_TIME < 100) %>% 
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time") 
+
+df_long$Sector <- factor(df_long$Sector)
+
+
+# Plot with distinct colors
+ggplot(df_long, aes(x = LAP_NUMBER, y =Time, color = Sector)) +
+  geom_point(size = 3) +  
+   geom_line(aes(group = interaction(Sector, LAP_NUMBER)), alpha = 0.6) +
+  labs(title = "Lap Times by Sector for Hankook Tires",
+       x = "Lap Number",
+       y = "Lap Time (seconds)",
+       color = "Sector") +
+  theme_minimal()
+
+```
+
+
+
+```{r}
+df_long <- pirelli %>%
+  filter(LAP_TIME < 100) %>% 
+  pivot_longer(cols = c(S1, S2, S3), names_to = "Sector", values_to = "Time") 
+
+df_long$Sector <- factor(df_long$Sector)
+
+
+# Plot with distinct colors
+ggplot(df_long, aes(x = LAP_NUMBER, y =Time, color = Sector)) +
+  geom_point(size = 3) +  
+   geom_line(aes(group = interaction(Sector, LAP_NUMBER)), alpha = 0.6) +
+  labs(title = "Lap Times by Sector for Pirelli Tires",
+       x = "Lap Number",
+       y = "Lap Time (seconds)",
+       color = "Sector") +
+  theme_minimal()
+```
+
+
+
+
